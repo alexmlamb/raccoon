@@ -6,13 +6,14 @@ from utils import print_wrap
 
 class Trainer:
     def __init__(self, train_monitor, data_generator, extensions,
-                 end_conditions):
+                 end_conditions, num_iterations):
         self.train_monitor = train_monitor
         self.extensions = [train_monitor] + extensions
         self.end_conditions = end_conditions
         self.data_generator = data_generator
         self.iteration = self.epoch = self.begin_time = 0
         self.data_processing_time = 0
+        self.num_iterations = num_iterations
 
     def print_extensions_logs(self, extensions_logs):
         for ext, (timing, logs) in extensions_logs:
@@ -29,17 +30,19 @@ class Trainer:
                 print print_wrap(line, 2)
 
     def train(self, custom_process_fun=None):
-        if self.iteration == 0:
-            self.start()
+        #if self.iteration % self.num_iterations == 0:
+        #    self.start()
 
         try:
             while True:
                 self.epoch += 1
                 epoch_iterator = self.data_generator()
 
+
                 while True:
                     t = time.time()
                     inputs = next(epoch_iterator, None)
+
                     self.data_processing_time += time.time() - t
                     if not inputs:
                         break
@@ -50,6 +53,10 @@ class Trainer:
                         res = custom_process_fun(inputs)
                     else:
                         res = self.process_batch(*inputs)
+
+                    if self.iteration % self.num_iterations == 0 and self.iteration > 0:
+                        self.epoch -= 1
+                        return
 
                     if res:
                         self.finish()

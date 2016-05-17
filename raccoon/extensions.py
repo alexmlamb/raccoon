@@ -3,7 +3,7 @@ import time
 import cPickle
 import numpy as np
 import theano
-from lasagne.layers import get_all_param_values, set_all_param_values
+from lasagne.layers import get_all_param_values
 
 from quantities import MonitoredQuantity
 
@@ -298,7 +298,7 @@ class VarMonitor(Monitor):
 
         # Function that will output the values of the required tensors for
         # given inputs.
-        self.f = theano.function(inputs, self.required_tensors, updates=updates)
+        self.f = theano.function(inputs, self.required_tensors, updates=updates, on_unused_input='warn')
 
         # Containers to store the current values of the monitored variables and
         # the computational time.
@@ -327,6 +327,8 @@ class VarMonitor(Monitor):
         """Computes the values for the monitored variables for given inputs for
         a given batch.
         """
+
+
         # List of values of the required tensors. We have to compute the
         # quantities from them.
         tensor_values = self.f(*inputs)
